@@ -1,4 +1,8 @@
 import numpy as np
+"""
+Travelling salesman problem in an EA
+
+"""
 
 distances = [[0, 100, 2, 3, 4],
 			[100, 0, 4, 5, 6],
