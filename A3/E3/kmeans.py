@@ -13,18 +13,9 @@ from random import uniform
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.metrics import confusion_matrix
 
-from A3.E3.functions import import_dataset
+from A3.E3.functions import import_dataset, distance
 
 Nc = 3
-
-def distance(point, centroid):
-	"""
-	Returns Euclidean distance from a point to a centroid.
-	:param point:
-	:param centroid:
-	:return:
-	"""
-	return np.linalg.norm(point - centroid)
 
 
 def move_centroids(points, closest, centroids):

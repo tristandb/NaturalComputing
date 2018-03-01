@@ -1,5 +1,16 @@
 from sklearn import datasets
 import pandas as pd
+import numpy as np
+
+
+def distance(point, centroid):
+	"""
+	Returns Euclidean distance from a point to a centroid.
+	:param point:
+	:param centroid:
+	:return:
+	"""
+	return np.linalg.norm(point - centroid)
 
 def import_dataset():
 	"""
