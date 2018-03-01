@@ -7,13 +7,13 @@ Often results in the following confusion matrix:
  [ 0 48 14]
  [ 0  2 36]]
 """
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from random import uniform
-from sklearn import datasets
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.metrics import confusion_matrix
+
+from A3.E3.functions import import_dataset
 
 Nc = 3
 
@@ -36,25 +36,6 @@ def move_centroids(points, closest, centroids):
 	:return:
 	"""
 	return np.array([points[closest == k].mean(axis=0) for k in range(len(centroids))])
-
-
-def import_dataset():
-	"""
-	Imports the dataset
-	:return: Input labels x and output (true) labels y
-	"""
-
-	# Import the IRIS dataset.
-	iris = datasets.load_iris()
-
-	# Store the inputs as a Pandas DataFrame and set the column names
-	x = pd.DataFrame(iris.data)
-	x.columns = ['Sepal_Length', 'Sepal_Width', 'Petal_Length', 'Petal_Width']
-
-	y = pd.DataFrame(iris.target)
-	y.columns = ['Targets']
-
-	return x, y
 
 
 def statistics(x, y, assigned):
