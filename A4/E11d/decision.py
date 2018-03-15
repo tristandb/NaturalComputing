@@ -24,7 +24,7 @@ plt.show()
 
 plt.clf()
 plt.plot(np.linspace(0, 1, 100), probability[1, :])
-plt.xlabel('Jury Size')
+plt.xlabel('Competence level')
 plt.ylabel('Probability of making a Correct Decision')
 plt.title('Probability of making a Correct Decision versus Jury Size')
 plt.savefig('competence_single.png')
