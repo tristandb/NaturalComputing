@@ -51,6 +51,7 @@ def statistics(x, y, assigned):
 	ax.set_zlabel('Petal length')
 	ax.set_title('K-Means')
 	ax.dist = 12
+	plt.savefig('images/K-Means.png')
 
 	plt.show()
 

@@ -1,8 +1,12 @@
-import numpy as np
-from os import getcwd
 from collections import Counter
-Q = 1.0
-P = 0.2
+from os import getcwd
+
+import numpy as np
+
+from A3.E6.reduce import simplify
+
+Q = 10.
+P = 0.025
 
 class ACO:
 	def __init__(self, puzzle):
@@ -95,14 +99,20 @@ class ACO:
 				# Calculate fitness
 				fitnesses.append(self.fitness())
 
+			print(np.mean(fitnesses))
 			# Update pheromones
 			fitmaxindex = np.argmin(fitnesses)
-			print(i, fitnesses[fitmaxindex])
 			self.update_pheromone(fitnesses[fitmaxindex], puzzles[fitmaxindex])
+
+
 
 
 
 if __name__ == '__main__':
 	sudoku = np.loadtxt(getcwd() + '/puzzles/s10a.txt').reshape(81, 1)
+	print(len([1 for a in sudoku  if a == 0.0]))
+	sudoku = np.array(simplify(sudoku))
+	print(len([1 for a in sudoku if a == 0.0]))
+	print(Counter(sudoku))
 	aco = ACO(puzzle=sudoku)
 	aco.solve()
