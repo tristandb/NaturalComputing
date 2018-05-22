@@ -1,4 +1,5 @@
 
+
 detect <- function(dataset){
   ## Predict event as random guess with 50% probability
   probability <- runif(1)
@@ -51,8 +52,34 @@ detectorApplication <- function(repertoire, input) {
 }
 
 trainingData <- readRDS(file = "../Data/waterDataTraining.RDS")
+#Delete rows where any column is NA.
+#Surprisingly this does not include any rows where EVENT is TRUE
+trainingData <- trainingData[complete.cases(trainingData), ]
 
-selfData <- head(trainingData[trainingData$EVENT == FALSE,])
-nonSelfData <- head(trainingData[trainingData$EVENT == TRUE,])
-repertoire <- detectorGeneration(selfData, 5)
-detectorApplication(repertoire, trainingData)
+
+selfData <- trainingData[trainingData$EVENT == FALSE,]
+nonSelfData <- trainingData[trainingData$EVENT == TRUE,]
+
+means <- colMeans(trainingData[, c(2:10)])
+sds <- apply(trainingData[, c(2:10)], 2 , sd)
+
+
+selfEntry <- selfData[1231, 2:10]
+nonSelfEntry <- nonSelfData[1235, 2:10]
+
+cat("Self: \n")
+for (i in 1:length(selfEntry)) {
+	prob <- pnorm(selfEntry[1, i], means[i], sds[i])
+	print(prob)
+}
+
+cat("\nNonself: \n")
+for (i in 1:length(nonSelfEntry)) {
+	prob <- pnorm(nonSelfEntry[1, i], means[i], sds[i])
+	print(prob)
+}
+#pnorm(entry[0], 1, 1)
+
+#repertoire <- detectorGeneration(selfData, 5)
+#detectorApplication(repertoire, trainingData)\
+#trainingData[trainingData$]
