@@ -2,6 +2,10 @@ detect <- function(row){
   return (detectorApplication(repertoire, row))
 }
 
+binFunction <- function(row) {
+  return (round(((row - minimums) / maximums * numberbins),0))
+}
+
 destruct <- function(){
   ## remove global variables
   
@@ -77,8 +81,8 @@ range <- (maximums - minimums) / numberbins
 
 binnedData <- t(apply(trainingData[, c(2:10)], 1, binFunction))
 
-selfData <- trainingData[binnedTrainingData$EVENT == FALSE,]
-nonSelfData <- trainingData[binnedTrainingData$EVENT == TRUE,]
+selfData <- trainingData[trainingData$EVENT == FALSE,]
+nonSelfData <- trainingData[trainingData$EVENT == TRUE,]
 
 binnedSelfData <- t(apply(selfData[, c(2:10)], 1, binFunction))
 binnedNonSelfData <- t(apply(nonSelfData[, c(2:10)], 1, binFunction))
