@@ -15,9 +15,9 @@ getOutline <- function(){
   return(list(NAME=competitor.name, INSTITUTION=competitor.institution));
 }
 
+# Matches 1 detector on 1 row
+# Returns if the detector and row match
 detectorMatch <- function(detector, row, r) {
-  #for (i in 1:nrow(data[, ])) {
-  #  entry <- data[i, ]
   matches = sum(row == detector)
   if (matches >= r)
     return (TRUE)
@@ -25,8 +25,10 @@ detectorMatch <- function(detector, row, r) {
   return (FALSE)
 }
 
+# Generates and returns a random detector
+# This detector is a vector whose values are in [0, numberbins)
 randomDetector <- function() {
-  return(as.integer(runif(9, 0, numberbins))) #Return list of 10 elements between 1 and 100
+  return(as.integer(runif(9, 0, numberbins)))
 }
 
 detectorGeneration <- function(selfData, nr=100000) {
@@ -48,7 +50,8 @@ detectorGeneration <- function(selfData, nr=100000) {
   return(repertoire)
 }
 
-#Return TRUE in case input is non-self
+# Applies all detectors in the repertoire to the row
+# Returns TRUE if any of the detectors match. FALSE otherwise
 detectorApplication <- function(repertoire, row) {
   for (detector in repertoire) {
     if (detectorMatch(detector, row, 4)) {
@@ -58,6 +61,7 @@ detectorApplication <- function(repertoire, row) {
   return (FALSE)
 }
 
+# Wrapper that calls detectorApplication for each row in the dataset
 detectorApplicationDataset <- function(repertoire, dataset) {
   for (i in 1:nrow(dataset[, ])) {
     entry <- dataset[i, ]
