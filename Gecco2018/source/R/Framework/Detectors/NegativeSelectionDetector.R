@@ -1,12 +1,5 @@
-
-
-detect <- function(dataset){
-  ## Predict event as random guess with 50% probability
-  probability <- runif(1)
-  event <- probability > 0.5
-  
-  ## return prediction
-  return(event)
+detect <- function(row){
+  return (detectorApplication(repertoire, row))
 }
 
 destruct <- function(){
@@ -22,19 +15,33 @@ getOutline <- function(){
   return(list(NAME=competitor.name, INSTITUTION=competitor.institution));
 }
 
-detectorMatch <- function(detector, selfData) {
-    return(FALSE)
+detectorMatch <- function(detector, row, r) {
+  #for (i in 1:nrow(data[, ])) {
+  #  entry <- data[i, ]
+  matches = sum(row == detector)
+  if (matches >= r)
+    return (TRUE)
+  #}
+  return (FALSE)
 }
 
 randomDetector <- function() {
-  return(runif(5, 1, 100)) #Return list of 10 elements between 1 and 100
+  return(as.integer(runif(9, 0, numberbins))) #Return list of 10 elements between 1 and 100
 }
 
-detectorGeneration <- function(selfData, nr=10000) {
+detectorGeneration <- function(selfData, nr=100000) {
   repertoire <- list()
   while (length(repertoire) < nr) {
     detector <- randomDetector()
-    if (!detectorMatch(detector, selfData)) {
+    flag = FALSE
+    for (i in 1:nrow(selfData[, ])) {
+      entry <- selfData[i, ]
+      if (detectorMatch(detector, entry, 4)) {
+        flag = TRUE
+        break
+      }
+    }
+    if (flag == FALSE) {
       repertoire[[length(repertoire)+1]] <- detector
     }
   }
@@ -42,13 +49,20 @@ detectorGeneration <- function(selfData, nr=10000) {
 }
 
 #Return TRUE in case input is non-self
-detectorApplication <- function(repertoire, input) {
+detectorApplication <- function(repertoire, row) {
   for (detector in repertoire) {
-    if (detectorMatch(detector, input)) {
-      return(TRUE)
+    if (detectorMatch(detector, row, 4)) {
+      return (TRUE)
     }
   }
-  return(FALSE)
+  return (FALSE)
+}
+
+detectorApplicationDataset <- function(repertoire, dataset) {
+  for (i in 1:nrow(dataset[, ])) {
+    entry <- dataset[i, ]
+    print(detectorApplication(repertoire, entry))
+  }
 }
 
 trainingData <- readRDS(file = "../Data/waterDataTraining.RDS")
@@ -56,30 +70,20 @@ trainingData <- readRDS(file = "../Data/waterDataTraining.RDS")
 #Surprisingly this does not include any rows where EVENT is TRUE
 trainingData <- trainingData[complete.cases(trainingData), ]
 
+numberbins <- 30
+maximums = apply(trainingData[, c(2:10)], 2, max)
+minimums = apply(trainingData[, c(2:10)], 2, min)
+range <- (maximums - minimums) / numberbins
 
-selfData <- trainingData[trainingData$EVENT == FALSE,]
-nonSelfData <- trainingData[trainingData$EVENT == TRUE,]
+binnedData <- t(apply(trainingData[, c(2:10)], 1, binFunction))
 
-means <- colMeans(trainingData[, c(2:10)])
-sds <- apply(trainingData[, c(2:10)], 2 , sd)
+selfData <- trainingData[binnedTrainingData$EVENT == FALSE,]
+nonSelfData <- trainingData[binnedTrainingData$EVENT == TRUE,]
 
+binnedSelfData <- t(apply(selfData[, c(2:10)], 1, binFunction))
+binnedNonSelfData <- t(apply(nonSelfData[, c(2:10)], 1, binFunction))
 
-selfEntry <- selfData[1231, 2:10]
-nonSelfEntry <- nonSelfData[1235, 2:10]
+repertoire <- detectorGeneration(binnedSelfData[,], 100)
 
-cat("Self: \n")
-for (i in 1:length(selfEntry)) {
-	prob <- pnorm(selfEntry[1, i], means[i], sds[i])
-	print(prob)
-}
-
-cat("\nNonself: \n")
-for (i in 1:length(nonSelfEntry)) {
-	prob <- pnorm(nonSelfEntry[1, i], means[i], sds[i])
-	print(prob)
-}
-#pnorm(entry[0], 1, 1)
-
-#repertoire <- detectorGeneration(selfData, 5)
-#detectorApplication(repertoire, trainingData)\
-#trainingData[trainingData$]
+detectorApplicationDataset(repertoire, binnedSelfData)
+detectorApplicationDataset(repertoire, binnedNonSelfData)
