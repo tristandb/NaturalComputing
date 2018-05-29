@@ -1,9 +1,13 @@
-detect <- function(row){
+library(parallel)
+
+detect <- function(dataset){
+  row <- dataset
+  repertoire <- loadRepertoire()
   return (detectorApplication(repertoire, row))
 }
 
 binFunction <- function(row) {
-  return (round(((row - minimums) / maximums * numberbins),0))
+  return (round(((row - minimums) / maximums * numberbins), 0))
 }
 
 destruct <- function(){
@@ -20,13 +24,9 @@ getOutline <- function(){
 }
 
 # Matches 1 detector on 1 row
-# Returns if the detector and row match
+# Returns whether the detector and row match
 detectorMatch <- function(detector, row, r) {
-  matches = sum(row == detector)
-  if (matches >= r)
-    return (TRUE)
-  #}
-  return (FALSE)
+  return (sum(row == detector) >= r)
 }
 
 # Generates and returns a random detector
@@ -35,6 +35,8 @@ randomDetector <- function() {
   return(as.integer(runif(9, 0, numberbins)))
 }
 
+
+# Generates a repertoire of nr detectors that don't match on selfData
 detectorGeneration <- function(selfData, nr=100000) {
   repertoire <- list()
   while (length(repertoire) < nr) {
@@ -49,6 +51,7 @@ detectorGeneration <- function(selfData, nr=100000) {
     }
     if (flag == FALSE) {
       repertoire[[length(repertoire)+1]] <- detector
+      print(length(repertoire))
     }
   }
   return(repertoire)
@@ -58,6 +61,7 @@ detectorGeneration <- function(selfData, nr=100000) {
 # Returns TRUE if any of the detectors match. FALSE otherwise
 detectorApplication <- function(repertoire, row) {
   for (detector in repertoire) {
+    print(detector)
     if (detectorMatch(detector, row, 4)) {
       return (TRUE)
     }
@@ -73,12 +77,28 @@ detectorApplicationDataset <- function(repertoire, dataset) {
   }
 }
 
+# Generates a repertoire consisting of nr detectors
+# then saves this repertoire to disk and returns the repertoire
+createAndStoreRepertoire <- function(selfData, nr, filename="Data/detectors.RData") {
+  repertoire <- unlist(mclapply(1:detectCores(),
+    FUN=function(i) detectorGeneration(binnedSelfData, as.integer(nr/detectCores())),
+    mc.cores=detectCores()), recursive=FALSE)
+
+  save(repertoire, file=filename)
+  return (repertoire)
+}
+
+# Loads the repertoire from disk and returns it
+loadRepertoire <- function(filename="../Data/detectors.RData") {
+  return (load(filename))
+}
+if (TRUE) {
 trainingData <- readRDS(file = "../Data/waterDataTraining.RDS")
 #Delete rows where any column is NA.
 #Surprisingly this does not include any rows where EVENT is TRUE
 trainingData <- trainingData[complete.cases(trainingData), ]
 
-numberbins <- 30
+numberbins <- 32
 maximums = apply(trainingData[, c(2:10)], 2, max)
 minimums = apply(trainingData[, c(2:10)], 2, min)
 range <- (maximums - minimums) / numberbins
@@ -91,7 +111,10 @@ nonSelfData <- trainingData[trainingData$EVENT == TRUE,]
 binnedSelfData <- t(apply(selfData[, c(2:10)], 1, binFunction))
 binnedNonSelfData <- t(apply(nonSelfData[, c(2:10)], 1, binFunction))
 
-repertoire <- detectorGeneration(binnedSelfData[,], 100)
+repertoire = loadRepertoire()
+print(repertoire)
+#repertoire <- createAndStoreRepertoire(binnedSelfData, 100)
 
-detectorApplicationDataset(repertoire, binnedSelfData)
-detectorApplicationDataset(repertoire, binnedNonSelfData)
+#detectorApplicationDataset(repertoire, binnedNonSelfData)
+#tmp <- createAndStoreRepertoire(binnedSelfData, 5000)
+}
