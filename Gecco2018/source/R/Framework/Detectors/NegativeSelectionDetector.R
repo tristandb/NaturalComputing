@@ -31,6 +31,23 @@ detectorMatch <- function(detector, row, r) {
   return (sum(row == detector) >= r)
 }
 
+
+# Continguous match
+detectorMatchContinguous <- function(detector, row, r) {
+  for (i in 1:(length(detector) - r + 1)) {
+    match = TRUE
+    for (j in 1:r) {
+      if(detector[i+j-1] != row[i+j-1]) {
+        match = FALSE
+        break
+      }
+    }
+    if (match)
+      return (TRUE)
+  }
+  return (FALSE)
+}
+
 # Generates and returns a random detector
 # This detector is a vector whose values are in [0, numberbins)
 randomDetector <- function() {
@@ -46,7 +63,7 @@ detectorGeneration <- function(selfData, nr=100000) {
     flag = FALSE
     for (i in 1:nrow(selfData[, ])) {
       entry <- selfData[i, ]
-      if (detectorMatch(detector, entry, 4)) {
+      if (detectorMatchContinguous(detector, entry, 4)) {
         flag = TRUE
         break
       }
@@ -63,7 +80,7 @@ detectorGeneration <- function(selfData, nr=100000) {
 # Returns TRUE if any of the detectors match. FALSE otherwise
 detectorApplication <- function(repertoire, row) {
   for (detector in repertoire) {
-    if (detectorMatch(detector, as.numeric(as.vector(row)), 4)) {
+    if (detectorMatchContinguous(detector, as.numeric(as.vector(row)), 4)) {
       return (TRUE)
     }
   }
@@ -75,17 +92,17 @@ detectorApplication <- function(repertoire, row) {
 detectorApplicationDataset <- function(repertoire, dataset) {
   for (i in 1:nrow(dataset[, ])) {
     entry <- dataset[i, ]
-    # print(detectorApplication(repertoire, entry))
+    print(detectorApplication(repertoire, entry))
   }
 }
 
 # Generates a repertoire consisting of nr detectors
 # then saves this repertoire to disk and returns the repertoire
-createAndStoreRepertoire <- function(selfData, nr, filename="Data/detectors.RData") {
+createAndStoreRepertoire <- function(selfData, nr=100000, filename="Data/detectors.RData") {
   repertoire <- unlist(mclapply(1:detectCores(),
     FUN=function(i) detectorGeneration(binnedSelfData, as.integer(nr/detectCores())),
     mc.cores=detectCores()), recursive=FALSE)
-  #save(repertoire, file=filename)
+  save(repertoire, file=filename)
   return (repertoire)
 }
 
@@ -113,8 +130,9 @@ nonSelfData <- trainingData[trainingData$EVENT == TRUE,]
 binnedSelfData <- t(apply(selfData[, c(2:10)], 1, binFunction))
 binnedNonSelfData <- t(apply(nonSelfData[, c(2:10)], 1, binFunction))
 
-loadRepertoire()
+#loadRepertoire()
+#detectorApplicationDataset(repertoire, binnedNonSelfData)
+#detectorApplicationDataset(repertoire, binnedSelfData)
 
-detectorApplicationDataset(repertoire, binnedNonSelfData)
-#tmp <- createAndStoreRepertoire(binnedSelfData, 5000)
+tmp <- createAndStoreRepertoire(binnedSelfData, 100, "../Data/contDetectors.RData")
 }
