@@ -44,7 +44,6 @@ for (submission in allDetectors){ # submission <- allDetectors[6]
   predictionResult <- rep(NA, nrow(trainingData)) # empty result array
   for (rowIndex in 1:nrow(trainingData)){
     predictionResult[rowIndex] <- detect(dataset = trainingData[rowIndex, -11])
-    print("YEEEEEEEEEEEEEEEEEEEEE")
   }
   
   ## Evaluate prediction using F1 score
