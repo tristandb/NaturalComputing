@@ -1,13 +1,15 @@
 library(parallel)
 
 detect <- function(dataset){
-  row <- dataset
   loadRepertoire()
+  
+  row <- binFunction(dataset[, c(2:10)])
+
   return (detectorApplication(repertoire, row))
 }
 
 binFunction <- function(row) {
-  return (round(((row - minimums) / maximums * numberbins), 0))
+  return (floor(((row - minimums) / maximums * numberbins)))
 }
 
 destruct <- function(){
@@ -61,10 +63,11 @@ detectorGeneration <- function(selfData, nr=100000) {
 # Returns TRUE if any of the detectors match. FALSE otherwise
 detectorApplication <- function(repertoire, row) {
   for (detector in repertoire) {
-    if (detectorMatch(detector, row, 4)) {
+    if (detectorMatch(detector, as.numeric(as.vector(row)), 4)) {
       return (TRUE)
     }
   }
+
   return (FALSE)
 }
 
@@ -72,7 +75,7 @@ detectorApplication <- function(repertoire, row) {
 detectorApplicationDataset <- function(repertoire, dataset) {
   for (i in 1:nrow(dataset[, ])) {
     entry <- dataset[i, ]
-    print(detectorApplication(repertoire, entry))
+    # print(detectorApplication(repertoire, entry))
   }
 }
 
@@ -91,7 +94,7 @@ loadRepertoire <- function(filename="../Data/detectors.RData") {
   load(filename, .GlobalEnv)
 }
 
-if (FALSE) {
+if (TRUE) {
 trainingData <- readRDS(file = "../Data/waterDataTraining.RDS")
 #Delete rows where any column is NA.
 #Surprisingly this does not include any rows where EVENT is TRUE
@@ -110,6 +113,8 @@ nonSelfData <- trainingData[trainingData$EVENT == TRUE,]
 binnedSelfData <- t(apply(selfData[, c(2:10)], 1, binFunction))
 binnedNonSelfData <- t(apply(nonSelfData[, c(2:10)], 1, binFunction))
 
-#detectorApplicationDataset(repertoire, binnedNonSelfData)
+loadRepertoire()
+
+detectorApplicationDataset(repertoire, binnedNonSelfData)
 #tmp <- createAndStoreRepertoire(binnedSelfData, 5000)
 }

@@ -34,15 +34,14 @@ allDetectors <- dir(pattern = "*.R")
 completeResult <- NULL
 
 for (submission in allDetectors){ # submission <- allDetectors[6]
-
   ## Load detector
   source(submission)
   submissionOutline <- getOutline()
   cat(paste("\nRunning Submission: ", submissionOutline$NAME))
   
   ## Run detector
-  predictionResult <- rep(NA, nrow(trainingData)) # empty result array
-  for (rowIndex in 1:nrow(trainingData)){
+  predictionResult <- rep(FALSE, nrow(trainingData)) # empty result array
+  for (rowIndex in 1:10000){
     predictionResult[rowIndex] <- detect(dataset = trainingData[rowIndex, -11])
   }
   
