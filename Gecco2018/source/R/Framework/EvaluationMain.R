@@ -39,11 +39,18 @@ for (submission in allDetectors){ # submission <- allDetectors[6]
   submissionOutline <- getOutline()
   cat(paste("\nRunning Submission: ", submissionOutline$NAME))
   
+  ## Progress bar
+  pb <- txtProgressBar(min = 1, max = nrow(trainingData), style = 3)
+  
   ## Run detector
   predictionResult <- rep(FALSE, nrow(trainingData)) # empty result array
   for (rowIndex in 1:nrow(trainingData)){
+    setTxtProgressBar(pb, rowIndex)
     predictionResult[rowIndex] <- detect(dataset = trainingData[rowIndex, -11])
   }
+  
+  # Close progress bar
+  close(pb)
   
   ## Evaluate prediction using F1 score
   result <- calculateScore(observations = trainingData$EVENT, predictions = predictionResult)
