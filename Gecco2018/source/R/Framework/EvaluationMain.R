@@ -41,7 +41,7 @@ for (submission in allDetectors){ # submission <- allDetectors[6]
   
   ## Run detector
   predictionResult <- rep(FALSE, nrow(trainingData)) # empty result array
-  for (rowIndex in 1:10000){
+  for (rowIndex in 1:nrow(trainingData)){
     predictionResult[rowIndex] <- detect(dataset = trainingData[rowIndex, -11])
   }
   
