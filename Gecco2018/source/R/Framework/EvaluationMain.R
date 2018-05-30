@@ -43,7 +43,7 @@ for (submission in allDetectors){ # submission <- allDetectors[6]
   pb <- txtProgressBar(min = 1, max = nrow(trainingData), style = 3)
   
   ## Run detector
-  predictionResult <- rep(FALSE, nrow(trainingData)) # empty result array
+  predictionResult <- rep(NA, nrow(trainingData)) # empty result array
   for (rowIndex in 1:nrow(trainingData)){
     setTxtProgressBar(pb, rowIndex)
     predictionResult[rowIndex] <- detect(dataset = trainingData[rowIndex, -11])
