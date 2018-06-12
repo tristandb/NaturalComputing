@@ -1,14 +1,11 @@
 library(parallel)
 
 detect <- function(dataset){
-  options(warn=1)
+  loadRepertoire()
   
   row <- binFunction(dataset[, c(2:10)])
 
-  results <- mclapply(1:detectCores(),
-    FUN=function(i) detectorApplication(chunks[[i]], row),
-    mc.cores=detectCores())
-  return (any(as.logical(results)))
+  return (detectorApplication(repertoire, row))
 }
 
 binFunction <- function(row) {
@@ -34,16 +31,6 @@ detectorMatch <- function(detector, row, r) {
   return (sum(row == detector) >= r)
 }
 
-
-vsplit <- function(v, n) {
-    l = length(v)
-    r = l/n
-    return(lapply(1:n, function(i) {
-        s = max(1, round(r*(i-1))+1)
-        e = min(l, round(r*i))
-        return(v[s:e])
-    }))
-}
 
 # Continguous match
 detectorMatchContinguous <- function(detector, row, r) {
@@ -97,6 +84,7 @@ detectorApplication <- function(repertoire, row) {
       return (TRUE)
     }
   }
+
   return (FALSE)
 }
 
@@ -123,7 +111,7 @@ loadRepertoire <- function(filename="../Data/detectors.RData") {
   load(filename, .GlobalEnv)
 }
 
-if (TRUE) {
+if (FALSE) {
 trainingData <- readRDS(file = "../Data/waterDataTraining.RDS")
 #Delete rows where any column is NA.
 #Surprisingly this does not include any rows where EVENT is TRUE
@@ -134,20 +122,17 @@ maximums = apply(trainingData[, c(2:10)], 2, max)
 minimums = apply(trainingData[, c(2:10)], 2, min)
 range <- (maximums - minimums) / numberbins
 
-loadRepertoire()
-chunks <- split(repertoire, cut(seq_along(repertoire), detectCores(), labels = FALSE)) 
+binnedData <- t(apply(trainingData[, c(2:10)], 1, binFunction))
 
-#binnedData <- t(apply(trainingData[, c(2:10)], 1, binFunction))
+selfData <- trainingData[trainingData$EVENT == FALSE,]
+nonSelfData <- trainingData[trainingData$EVENT == TRUE,]
 
-#selfData <- trainingData[trainingData$EVENT == FALSE,]
-#nonSelfData <- trainingData[trainingData$EVENT == TRUE,]
-
-#binnedSelfData <- t(apply(selfData[, c(2:10)], 1, binFunction))
-#binnedNonSelfData <- t(apply(nonSelfData[, c(2:10)], 1, binFunction))
+binnedSelfData <- t(apply(selfData[, c(2:10)], 1, binFunction))
+binnedNonSelfData <- t(apply(nonSelfData[, c(2:10)], 1, binFunction))
 
 #loadRepertoire()
 #detectorApplicationDataset(repertoire, binnedNonSelfData)
 #detectorApplicationDataset(repertoire, binnedSelfData)
 
-#tmp <- createAndStoreRepertoire(binnedSelfData, 100, "../Data/contDetectors.RData")
+tmp <- createAndStoreRepertoire(binnedSelfData, 100, "../Data/contDetectors.RData")
 }
