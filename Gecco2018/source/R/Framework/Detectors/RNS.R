@@ -1,13 +1,19 @@
 detect <- function(dataset){
   loadRepertoire()
-  
+  means <- c(8.521414e+00, 1.654820e-01, 8.366415e+00, 7.528990e+02, 2.095210e+02, 1.977803e-02, 1.060988e-01, 1.534209e+03, 9.277287e+02)
+  stdev <- c(1.28131547, 0.01020692, 0.10162474, 12.94532958, 7.74751512, 0.00549167, 0.00713156, 208.17169991, 147.44776979)
+  dataset[, c(2:10)] <- scale(dataset[, c(2:10)], center=means, scale=stdev)
   r <- 0.6
   for (detector in repertoire) {
-    if (euc.dist(dataset[, c(2:10)], detector) < r) {
+    print(detector)
+    distance <- euc.dist(dataset[, c(2:10)], detector)
+    if (distance < r) {
+      print("True")
       return (TRUE)
     }
   }
   
+  print("False")
   return (FALSE)
 }
 
@@ -33,10 +39,14 @@ getRandomDetector <- function(min = -3.5, max = 3.5) {
   return(runif(9, min, max))
 }
 
+getRnormDetector <- function() {
+  return (rnorm(9))
+}
+
 generateInitialRepertoire <- function(nr = 400) {
   repertoire <- list()
   while (length(repertoire) < nr) {
-    detector = getRandomDetector()
+    detector = getRnormDetector()
     detector.age = 1
     repertoire[[length(repertoire)+1]] <- detector
   }
@@ -63,7 +73,7 @@ mu.d <- function(x, detector, r) {
   return (-1 * (euc.dist(detector, x) ^ 2) / (2 * (r ^ 2)))
 }
 
-if (FALSE) {
+if (TRUE) {
   # Run Training
   
   # Load Training data
@@ -79,20 +89,24 @@ if (FALSE) {
   selfData <- trainingData[trainingData$EVENT == FALSE,]
   nonSelfData <- trainingData[trainingData$EVENT == TRUE,]
   
-  detectors = 400
+  detectors = 500
   repertoire <- generateInitialRepertoire(detectors)
   repertoire.age <- generateInitialAge(detectors)
-  num_iter = 400
+  num_iter = 100
   knn = 10
-  r = 0.6
+  r = 5
   t = 5
   j = 0
   i = 0
-  tau = 10000
+  tau = 1000
   eta = 1
+
   while (j < num_iter) {
+    print(j)
+    
+    pb <- txtProgressBar(min = 1, max = detectors, style = 3)
     for (i in seq_along(repertoire)) {
-      print(i)
+      setTxtProgressBar(pb, i)
       # NearCells = Get k-nearest neighbours of detector,  order with respect to distance
       NearCells <- knn.get(selfData, repertoire[[i]], knn)
       
