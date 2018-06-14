@@ -92,13 +92,13 @@ if (TRUE) {
   detectors = 500
   repertoire <- generateInitialRepertoire(detectors)
   repertoire.age <- generateInitialAge(detectors)
-  num_iter = 100
+  num_iter = 1
   knn = 10
-  r = 5
-  t = 5
+  r = 1
+  t = 2.5
   j = 0
   i = 0
-  tau = 1000
+  tau = 100
   eta = 1
 
   while (j < num_iter) {
