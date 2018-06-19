@@ -3,7 +3,7 @@ import csv
 import random
 from tqdm import tqdm
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 random.seed(42)
 np.random.seed(43)
@@ -18,7 +18,7 @@ nonSelfData = np.array(list(csv.reader(open("../Data/nonSelfData.csv", "r"), del
 trainSelfData, testSelfData = generate_train_testset(selfData, division=0.8)
 trainNonSelfData, testNonSelfdata = generate_train_testset(nonSelfData, division=0.8)
 
-scaler = StandardScaler()
+scaler = MinMaxScaler()
 scaler.fit(np.concatenate((trainSelfData, trainNonSelfData)))
 
 trainSelfData = scaler.fit_transform(trainSelfData)
@@ -26,11 +26,36 @@ testSelfData = scaler.fit_transform(testSelfData)
 trainNonSelfData = scaler.fit_transform(trainNonSelfData)
 testNonSelfData = scaler.fit_transform(testNonSelfdata)
 
+np.set_printoptions(threshold=np.nan)
 
-def test(repertoire):
-	r = 2.5
+np.set_printoptions(suppress=True)
 
-	detect = lambda detector, entry: np.linalg.norm(detector - entry) < r
+print(np.amax(trainNonSelfData))
+print(np.amin(testSelfData))
+tqdm.monitor_interval = 0
+
+radius = 0.4
+
+def printtofile():
+	np.set_printoptions(suppress=True)
+	two = np.ones((len(testNonSelfData), 1)) * 2
+	zero = np.zeros((len(testSelfData), 1))
+	c = np.hstack((testNonSelfData, two))
+	d = np.hstack((testSelfData, zero))
+	concatted = np.concatenate((c, d))
+
+	a = [9, len(concatted)]
+
+	print(len(concatted))
+	print(len(trainSelfData))
+
+	np.savetxt('test.txt', concatted, fmt='%f %f %f %f %f %f %f %f %f %i')
+
+	np.savetxt('train.txt', trainSelfData, fmt='%f')
+
+def test():
+
+	detect = lambda detector, entry: np.linalg.norm(detector - entry) < radius
 
 	print("Testing Detectors \n")
 
@@ -41,7 +66,7 @@ def test(repertoire):
 	TN = 0
 	FN = 0
 
-	for entry in tqdm(testNonSelfdata):
+	for entry in tqdm(trainNonSelfData):
 		# print(np.linalg.norm(repertoire[1] - entry))
 		res = any([detect(detector, entry) for detector in repertoire])
 		if res:
@@ -52,8 +77,7 @@ def test(repertoire):
 	print("\nTP", TP)
 	print("FN", FN)
 
-	for entry in tqdm(testSelfData):
-		# print(np.linalg.norm(repertoire[1] - entry))
+	for entry in tqdm(trainSelfData):
 		res = any([detect(detector, entry) for detector in repertoire])
 		if res:
 			FP += 1
@@ -64,10 +88,9 @@ def test(repertoire):
 	print("TN", TN)
 
 
-def train(trainSelfData):
-	detectors_num = 10
+def train(data):
+	detectors_num = 10000
 	repertoire = []
-	radius = 2.5
 
 	print("Generating Detectors \n")
 
@@ -75,18 +98,19 @@ def train(trainSelfData):
 
 	while len(repertoire) < detectors_num:
 		# Randomly generate a candidate detector d_new.
-		detector = np.random.normal(loc=0, scale=1, size=9)
+		detector = np.random.uniform(low=0.0, high=1.0, size=9)
 
-		distances = sorted(trainSelfData, key=lambda x: np.linalg.norm(detector - x))
+		distances = sorted(data, key=lambda x: np.linalg.norm(detector - x))
 
 		if  np.linalg.norm(detector - distances[0]) > radius:
 			repertoire.append(detector)
 			pbar.update(1)
 
 	np.save("../Data/simple-repertoire.data", repertoire)
-
 	return repertoire
 
+
 if __name__ == '__main__':
+	# printtofile()
 	repertoire = train(trainSelfData)
-	test(repertoire)
+	test()
