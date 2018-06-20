@@ -61,8 +61,6 @@ def test():
 
 	repertoire = np.load("../Data/simple-repertoire.data.npy")
 
-	print(repertoire)
-
 	TP = 0
 	FP = 0
 	TN = 0
@@ -89,70 +87,30 @@ def test():
 	print("\nFP", FP)
 	print("TN", TN)
 
-def mu(x, d):
-	power = -1 * ((np.linalg.norm((d - x)) ** 2)/(2*radius**2))
-	return np.exp(power)
 
 def train(data):
+	detectors_num = 1000
 	repertoire = []
-
-	data = np.array(data)
 
 	print("Generating Detectors \n")
 
+	pbar = tqdm(total=detectors_num)
 
-	num_iter = 15
-	num_detectors = 1000
+	while len(repertoire) < detectors_num:
+		# Randomly generate a candidate detector d_new.
+		detector = np.random.uniform(low=0.0, high=1.0, size=9)
 
-	eta = 1.0
-	eta_orig = 1.0
+		distances = sorted(data, key=lambda x: np.linalg.norm(detector - x))
 
-	tau = 1.0
-
-	t_maxage = 5
-
-	# Generate a random population of detectors
-	detectors = [np.random.uniform(low=0.0, high=1.0, size=9) for _ in range(num_detectors)]
-	detector_ages = np.zeros(num_detectors)
-
-	pbar = tqdm(total=num_detectors * num_iter)
-
-
-	for j in range(num_iter):
-		for i, detector in enumerate(detectors):
-			distances = np.array([np.linalg.norm(detector - x) for x in data])
-
-			nearcells = data[distances.argsort()[::-1]][:20]
-
-			nearestself = np.mean(nearcells, axis = 0)
-
-			if np.linalg.norm(detector - nearestself) < radius:
-				dir = detector - nearestself
-				if detector_ages[i] > t_maxage:
-					detector_ages[i] = 0
-					detectors[i] = np.random.uniform(low=0.0, high=1.0, size=9)
-				else:
-					detector_ages[i] += 1
-					detectors[i] = detector + eta * dir
-			else:
-				detector_ages[i] = 0
-				numerator = np.sum([mu(da, detector) * (detector - da) for da in detectors])
-				denominator = np.sum([mu(da, detector) for da in detectors])
-				dir = numerator / denominator
-				detectors[i] = detector + eta * dir
-
+		if  np.linalg.norm(detector - distances[0]) > radius:
+			repertoire.append(detector)
 			pbar.update(1)
 
-		eta = eta_orig * np.exp(-j/tau)
-
-	print(detectors)
-
-	np.save("../Data/simple-repertoire.data", detectors)
-	return detectors
+	np.save("../Data/simple-repertoire.data", repertoire)
+	return repertoire
 
 
 if __name__ == '__main__':
 	# printtofile()
 	repertoire = train(trainSelfData)
 	test()
-	pass

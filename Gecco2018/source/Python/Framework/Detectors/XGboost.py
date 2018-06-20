@@ -1,16 +1,19 @@
+import random
+
 import numpy as np
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
 import json
 
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score
 from xgboost import XGBClassifier
 
 cols_to_norm = ["Tp", "Cl", 'pH', 'Redox', 'Leit', 'Trueb', 'Cl_2', 'Fm', 'Fm_2']
 
 pandas2ri.activate()
 
-
+random.seed(42)
+np.random.seed(43)
 
 def main():
 	"""
@@ -27,7 +30,7 @@ def main():
 	X_test = test.drop(['Time', 'EVENT'], axis=1).dropna(axis=0)
 	y_test = test.dropna(axis=0)['EVENT']
 
-	model = XGBClassifier()
+	model = XGBClassifier(n_estimators=1000, random_state=42)
 	model.fit(X_train, y_train)
 
 	print(model)
@@ -37,6 +40,9 @@ def main():
 
 	accuracy = accuracy_score(y_test, predictions)
 	print("Accuracy: %.2f%%" % (accuracy * 100.0))
+
+	f1 = f1_score(y_test, y_pred)
+	print("F1: %.6f%%" % (f1))
 
 
 

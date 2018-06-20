@@ -3,7 +3,7 @@ import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
 import json
 
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score
 from xgboost import XGBClassifier
 from sklearn import svm
 
@@ -36,6 +36,9 @@ def main():
 	predictions = [round(value) for value in y_pred]
 	accuracy = accuracy_score(y_test, predictions)
 	print("Accuracy: %.2f%%" % (accuracy * 100.0))
+
+	f1 = f1_score(y_test, y_pred)
+	print("F1: %.6f%%" % (f1))
 
 
 def normalize_data(data, cols_to_norm):
